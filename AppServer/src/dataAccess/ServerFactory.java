@@ -5,10 +5,15 @@
  */
 package dataAccess;
 
+import logicalModel.interfaces.Signable;
+
 /**
  *
- * @author 2dam
+ * @author Elbire
  */
 public class ServerFactory {
     
+    public static Signable getSignable(){
+        return new DataAccessObject();
+    }
 }
