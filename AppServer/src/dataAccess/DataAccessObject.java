@@ -147,7 +147,7 @@ public class DataAccessObject implements Signable {
         final String EMAILEXISTS = "SELECT * FROM public.res_users WHERE login = ?";
         final String INSERTPARTNER = "INSERT INTO public.res_partner(company_id, name, street, zip, city, email, active, mobile) VALUES('1',  ?,  ?,  ?,  ?,  ?, ?, ?)";
         final String SELECTPARTNER = "SELECT id FROM public.res_partner WHERE email = ?";
-        final String INSERTUSER = "INSERT INTO public.res_users(company_id, partner_id, active, login, password, notification_type) VALUES('1', ?, ?, ?, ?,'none')";
+        final String INSERTUSER = "INSERT INTO public.res_users(company_id, partner_id, active, login, password) VALUES('1', ?, ?, ?, ?)";
 
 
         con = openConnection();
