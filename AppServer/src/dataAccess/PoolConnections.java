@@ -16,7 +16,7 @@ import java.util.Stack;
 
 /**
  * Class for managing a pool of database connections.
- *
+ *Irati cariño comenta el codigo cuando tengas tiempo libre
  * Author: 2dam
  */
 public class PoolConnections {

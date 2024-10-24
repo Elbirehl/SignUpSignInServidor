@@ -9,6 +9,7 @@ import dataAccess.DataAccessObject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import logicalModel.model.User;
+
 /**
  *
  * @author 2dam
@@ -23,16 +24,16 @@ public class ServerApplication {
         DataAccessObject dao = new DataAccessObject();
         // Crear un usuario de prueba
         User user = new User(
-            "testuser@example.com", // Email
-            "password123",          // Contraseña
-            "Test User",            // Nombre
-            "123 Test St",          // Calle
-            123456789,              // Móvil
-            "Test City",            // Ciudad
-            12345,                  // Código postal
-            true                    // Activo
+                "testuser@example.com", // Email
+                "password123", // Contraseña
+                "Test User", // Nombre
+                "123 Test St", // Calle
+                123456789, // Móvil
+                "Test City", // Ciudad
+                12345, // Código postal
+                true // Activo
         );
-        
+
         try {
             // Intentar registrar el usuario
             User registeredUser = dao.signUp(user);
@@ -46,5 +47,5 @@ public class ServerApplication {
             System.out.println("Conexión cerrada con éxito.");
         }
     }
-    
+
 }
