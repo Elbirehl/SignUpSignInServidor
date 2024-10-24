@@ -6,13 +6,16 @@
 package dataAccess;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import logicalExceptions.MaxThreadsErrorException;
+import logicalExceptions.ServerErrorException;
+import logicalExceptions.SignInErrorException;
+import logicalExceptions.UserExistErrorException;
+import logicalExceptions.UserNotActiveException;
 import logicalModel.interfaces.Signable;
 import logicalModel.model.User;
 
@@ -22,7 +25,7 @@ import logicalModel.model.User;
  *
  * This class handles the interactions with the PostgreSQL database, including
  * user registration and login functionality.
- * 
+ *
  * @author Irati, Meylin, Olaia and Elbire
  */
 public class DataAccessObject implements Signable {
@@ -30,36 +33,36 @@ public class DataAccessObject implements Signable {
     private Connection con;
     private PreparedStatement stmt;
     private ResultSet rs;
-    
-    private static final String CONFIGDATA = "config.config";
-    ResourceBundle resourceBundle = ResourceBundle.getBundle(CONFIGDATA);
+    private static final Logger logger = Logger.getLogger(DataAccessObject.class.getName());
+
+    // Crear una instancia del pool de conexiones
+    private final PoolConnections pool = new PoolConnections();
 
     /**
-     * ESTO VA A TENER QUE IR CON LA CLASE DE POOL
+     * 
+     * @return 
      */
     public Connection openConnection() {
         con = null;
         try {
-            String url = resourceBundle.getString("URL");
-            con = DriverManager.getConnection(url, resourceBundle.getString("db_user"), resourceBundle.getString("db_password"));
+            con = pool.getConnection();
         } catch (SQLException e) {
-            //Logger.getLogger("DBConnection").severe(e.getLocalizedMessage());
-            System.out.println("Error al intentar abrir la BD: " + e.getMessage());
-            System.exit(1);
+            logger.log(Level.SEVERE, "Error al intentar abrir la BD: {0}", e.getMessage());
         }
         return con;
     }
+
     /**
      * ESTO VA A TENER QUE IR CON LA CLASE DE POOL
      */
     public void closeConnection() {
-
         try {
             if (stmt != null) {
                 stmt.close();
             }
             if (con != null) {
-                con.close();
+                // En lugar de cerrar, devolver la conexión al pool
+                pool.returnConnection(con);
             }
         } catch (SQLException ex) {
             Logger.getLogger(DataAccessObject.class.getName()).log(Level.SEVERE, null, ex);
@@ -70,11 +73,11 @@ public class DataAccessObject implements Signable {
      * Signs in a user to the system.
      *
      * @param user the user to sign in
-     * @return the signed-in user with updated information
-     * @throws
+     * @return the signed-in user with updated information     
      */
+    //Falta el maxthreadsErrorException que supongoq ue se manejara como tan el el worker que es el que extiende de hilos??
     @Override
-    public User signIn(User user) {
+    public User signIn(User user) throws MaxThreadsErrorException, ServerErrorException, SignInErrorException, UserNotActiveException {
         //signin
         final String USEREXISTS = "SELECT * FROM public.res_users WHERE login=? AND password=?";
         con = openConnection();
@@ -101,30 +104,27 @@ public class DataAccessObject implements Signable {
                     user.setZip(rs.getInt("zip"));
                     return user;
                 } else {
-                    System.out.println("Usuario inactivo. No puede inicair sesión");
-                    return null;
+                    throw new UserNotActiveException("El usuario está inactivo.");
                 }
             } else {
-                System.out.println("Usuario no encontrado");
-                return null;
+                throw new SignInErrorException("Usuario no encontrado.");
             }
 
         } catch (SQLException e) {
-            System.out.println("Error de SQL");
-            e.printStackTrace();
-            return null;
+            logger.log(Level.SEVERE, "Error de SQL", e);
+            throw new ServerErrorException("Error al acceder al servidor.");
         } finally {
             try {
                 if (rs != null) {
                     rs.close();
                 }
-                if (stmt != null){
+                if (stmt != null) {
                     stmt.close();
                 }
-                if(con !=  null){
+                if (con != null) {
                     con.close();
                 }
-            } catch (SQLException ex){
+            } catch (SQLException ex) {
                 ex.printStackTrace();
             }
         }
@@ -135,20 +135,21 @@ public class DataAccessObject implements Signable {
      * Registers a new user in the system.
      *
      * This method first checks if a user with the given email already exists.
-     * If not, it creates a new partner in the res_partner table, retrieves the 
+     * If not, it creates a new partner in the res_partner table, retrieves the
      * partner ID, and then inserts the new user in the res_users table.
      *
      * @param user the user to sign up
-     * @return the registered user with updated information or null if registration fails
-     * @throws SQLException if a database access error occurs
+     * @return the registered user with updated information or null if
+     * registration fails
+     * @throws logicalExceptions.ServerErrorException
+     * @throws logicalExceptions.UserExistErrorException
      */
     @Override
-    public User signUp(User user) {
+    public User signUp(User user) throws ServerErrorException, UserExistErrorException {
         final String EMAILEXISTS = "SELECT * FROM public.res_users WHERE login = ?";
         final String INSERTPARTNER = "INSERT INTO public.res_partner(company_id, name, street, zip, city, email, active, mobile) VALUES('1',  ?,  ?,  ?,  ?,  ?, ?, ?)";
         final String SELECTPARTNER = "SELECT id FROM public.res_partner WHERE email = ?";
         final String INSERTUSER = "INSERT INTO public.res_users(company_id, partner_id, active, login, password) VALUES('1', ?, ?, ?, ?)";
-
 
         con = openConnection();
         stmt = null;
@@ -159,9 +160,7 @@ public class DataAccessObject implements Signable {
             stmt.setString(1, user.getEmail());
             rs = stmt.executeQuery();
             if (rs.next()) {
-                // El usuario ya existe
-                System.out.println("El usuario ya está registrado.");
-                return null;
+                throw new UserExistErrorException("El usuario ya está registrado.");
             }
 
             // Insertar el nuevo partner en la tabla res_partner
@@ -185,8 +184,7 @@ public class DataAccessObject implements Signable {
             }
 
             if (partnerId == -1) {
-                System.out.println("Error al obtener el ID del partner.");
-                return null;
+                throw new ServerErrorException("Error al obtener el ID del partner.");
             }
 
             // Insertar el nuevo usuario en la tabla res_users
@@ -197,13 +195,12 @@ public class DataAccessObject implements Signable {
             stmt.setString(4, user.getPasswd());
             stmt.executeUpdate();
 
-            System.out.println("Usuario registrado exitosamente.");
+            logger.log(Level.INFO, "Usuario registrado exitosamente.");
             return user;
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Error al registrar el usuario: " + e.getMessage());
-            return null;
+            logger.log(Level.SEVERE, "Error al registrar el usuario", e);
+            throw new ServerErrorException("Error al registrar el usuario.");
         } finally {
             // Cerrar recursos
             try {

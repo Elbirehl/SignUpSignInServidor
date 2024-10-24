@@ -6,8 +6,6 @@
 package application;
 
 import dataAccess.DataAccessObject;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import logicalModel.model.User;
 /**
  *

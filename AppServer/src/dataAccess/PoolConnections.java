@@ -26,10 +26,12 @@ public class PoolConnections {
     private final String password;
     private final int maxPoolSize;
     private int connNum = 0;
+    //Se utiliza para verificar que una conexión de la base de datos esté activa y funcionando correctamente antes de entregarla a una solicitud. 
+    //Es un mecanismo de validación para asegurarse de que las conexiones que están inactivas en el pool no se hayan desconectado o dañado debido a razones externas, como un tiempo de espera prolongado o problemas de red.
     private final String sqlVerifyConn;
-    
+
     private static final String CONFIGDATA = "config.config";
-   
+
     private final Stack<Connection> freePool = new Stack<>();
     private final Set<Connection> occupiedPool = new HashSet<>();
 
@@ -42,7 +44,7 @@ public class PoolConnections {
         this.userName = resourceBundle.getString("userName");
         this.password = resourceBundle.getString("password");
         this.maxPoolSize = Integer.parseInt(resourceBundle.getString("maxPoolSize"));
-         this.sqlVerifyConn = resourceBundle.getString("sqlVerifyConn"); // Cargar la consulta SQL
+        this.sqlVerifyConn = resourceBundle.getString("sqlVerifyConn"); // Cargar la consulta SQL
     }
 
     /**
@@ -97,7 +99,22 @@ public class PoolConnections {
         freePool.push(conn);
     }
 
-    public static void main(String[] args) {
-        // Main method for testing purposes
+    public synchronized void closeAllConnections() throws SQLException {
+        // Cerrar todas las conexiones ocupadas
+        for (Connection conn : occupiedPool) {
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
+        }
+        occupiedPool.clear();
+
+        // Cerrar todas las conexiones libres
+        while (!freePool.isEmpty()) {
+            Connection conn = freePool.pop();
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
+        }
+        connNum = 0; // Restablecer el número de conexiones activas
     }
 }
