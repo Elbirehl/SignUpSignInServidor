@@ -9,13 +9,12 @@ import dataAccess.DataAccessObject;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import serverBusinessLogic.interfaces.Closable;
 
 /**
  *
  * @author Olaia
  */
-public class LiberatingThread extends Thread implements Closable {
+public class LiberatingThread extends Thread{
 
     private final List<DataAccessObject> resources;
     private static final Logger logger = Logger.getLogger(LiberatingThread.class.getName());
@@ -39,11 +38,5 @@ public class LiberatingThread extends Thread implements Closable {
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error al liberar recursos", e);
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        // Cierra todos los recursos cuando se llame directamente a close()
-        run();
     }
 }
