@@ -18,6 +18,7 @@ import logicalExceptions.UserExistErrorException;
 import logicalExceptions.UserNotActiveException;
 import logicalModel.interfaces.Signable;
 import logicalModel.model.User;
+import serverBusinessLogic.interfaces.Closable;
 
 /**
  * DataAccessObject class that manages database connections and implements the

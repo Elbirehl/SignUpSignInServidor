@@ -10,5 +10,5 @@ package serverBusinessLogic.interfaces;
  * @author 2dam
  */
 public interface Closable {
-    
+     void close() throws Exception;
 }

@@ -6,8 +6,6 @@
 package application;
 
 import dataAccess.DataAccessObject;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import logicalModel.model.User;
 
 /**
@@ -19,7 +17,7 @@ public class ServerApplication {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         // Crear una instancia de DataAccessObject
         DataAccessObject dao = new DataAccessObject();
         // Crear un usuario de prueba
@@ -47,5 +45,4 @@ public class ServerApplication {
             System.out.println("Conexión cerrada con éxito.");
         }
     }
-
 }

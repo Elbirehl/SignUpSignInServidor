@@ -13,13 +13,14 @@ import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Stack;
+import serverBusinessLogic.interfaces.Closable;
 
 /**
  * Class for managing a pool of database connections.
  *Irati cariño comenta el codigo cuando tengas tiempo libre
- * Author: 2dam
+ * Author: Irati
  */
-public class PoolConnections {
+public class PoolConnections implements Closable {
 
     private final String databaseUrl;
     private final String userName;
@@ -27,9 +28,9 @@ public class PoolConnections {
     private final int maxPoolSize;
     private int connNum = 0;
     private final String sqlVerifyConn;
-    
+
     private static final String CONFIGDATA = "config.config";
-   
+
     private final Stack<Connection> freePool = new Stack<>();
     private final Set<Connection> occupiedPool = new HashSet<>();
 
@@ -42,7 +43,7 @@ public class PoolConnections {
         this.userName = resourceBundle.getString("userName");
         this.password = resourceBundle.getString("password");
         this.maxPoolSize = Integer.parseInt(resourceBundle.getString("maxPoolSize"));
-         this.sqlVerifyConn = resourceBundle.getString("sqlVerifyConn"); // Cargar la consulta SQL
+        this.sqlVerifyConn = resourceBundle.getString("sqlVerifyConn"); // Cargar la consulta SQL
     }
 
     /**
@@ -68,15 +69,23 @@ public class PoolConnections {
         }
         occupiedPool.add(conn);
 
-        // Ensure the connection is active, reconnect if necessary
-        try (Statement st = conn.createStatement()) {
-            st.executeQuery(sqlVerifyConn);
-            return conn;
-        } catch (SQLException e) {
+        // Ensure the connection is active
+        if (!isConnectionActive(conn)) {
             occupiedPool.remove(conn);
             connNum--;
             conn.close();
-            return DriverManager.getConnection(databaseUrl, userName, password);
+            conn = DriverManager.getConnection(databaseUrl, userName, password);
+        }
+        return conn;
+    }
+    //Se utiliza para verificar que una conexión de la base de datos esté activa y funcionando correctamente antes de entregarla a una solicitud. 
+    //Es un mecanismo de validación para asegurarse de que las conexiones que están inactivas en el pool no se hayan desconectado o dañado debido a razones externas, como un tiempo de espera prolongado o problemas de red.
+    private boolean isConnectionActive(Connection conn) {
+        try (Statement st = conn.createStatement()) {
+            st.executeQuery(sqlVerifyConn);
+            return true;
+        } catch (SQLException e) {
+            return false;
         }
     }
 
@@ -97,7 +106,23 @@ public class PoolConnections {
         freePool.push(conn);
     }
 
-    public static void main(String[] args) {
-        // Main method for testing purposes
+    @Override
+    public void close() throws Exception {
+        // Cerrar todas las conexiones ocupadas
+        for (Connection conn : occupiedPool) {
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
+        }
+        occupiedPool.clear();
+
+        // Cerrar todas las conexiones libres
+        while (!freePool.isEmpty()) {
+            Connection conn = freePool.pop();
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
+        }
+        connNum = 0; // Restablecer el número de conexiones activas
     }
 }

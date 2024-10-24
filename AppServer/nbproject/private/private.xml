@@ -3,8 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/2dam/Desktop/SignUpSignInServidor/AppServer/src/dataAccess/DataAccessObject.java</file>
-            <file>file:/C:/Users/2dam/Desktop/SignUpSignInServidor/AppServer/src/application/ServerApplication.java</file>
+            <file>file:/C:/Users/2dam/Desktop/SignInSignUp/SignUpSignInServidor/AppServer/src/serverBusinessLogic/sockets/ServerSocket.java</file>
+            <file>file:/C:/Users/2dam/Desktop/SignInSignUp/SignUpSignInServidor/AppServer/src/dataAccess/PoolConnections.java</file>
+            <file>file:/C:/Users/2dam/Desktop/SignInSignUp/SignUpSignInServidor/AppServer/src/serverBusinessLogic/threads/LiberatingThread.java</file>
+            <file>file:/C:/Users/2dam/Desktop/SignInSignUp/SignUpSignInServidor/AppServer/src/serverBusinessLogic/interfaces/Closable.java</file>
+            <file>file:/C:/Users/2dam/Desktop/SignInSignUp/SignUpSignInServidor/AppServer/src/application/ServerApplication.java</file>
+            <file>file:/C:/Users/2dam/Desktop/SignInSignUp/SignUpSignInServidor/AppServer/src/dataAccess/DataAccessObject.java</file>
+            <file>file:/C:/Users/2dam/Desktop/SignInSignUp/SignUpSignInServidor/AppServer/src/dataAccess/ServerFactory.java</file>
         </group>
     </open-files>
 </project-private>
