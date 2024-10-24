@@ -33,7 +33,7 @@ public class ServerApplication {
         );
 
         try {
-            // Intentar registrar el usuario
+            // Intentar registrar el usuario en la base de datos
             User registeredUser = dao.signUp(user);
             System.out.println("Usuario registrado con éxito: " + registeredUser.getEmail());
         } catch (Exception e) {
