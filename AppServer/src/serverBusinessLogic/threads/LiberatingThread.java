@@ -5,12 +5,45 @@
  */
 package serverBusinessLogic.threads;
 
+import dataAccess.DataAccessObject;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import serverBusinessLogic.interfaces.Closable;
 
 /**
  *
- * @author 2dam
+ * @author Olaia
  */
 public class LiberatingThread extends Thread implements Closable {
-    
+
+    private final List<DataAccessObject> resources;
+    private static final Logger logger = Logger.getLogger(LiberatingThread.class.getName());
+
+    /**
+     * Constructor de LiberatingThread que acepta una lista de recursos a cerrar.
+     *
+     * @param resources Los recursos que deben ser cerrados (DataAccessObject).
+     */
+    public LiberatingThread(List<DataAccessObject> resources) {
+        this.resources = resources;
+    }
+
+    @Override
+    public void run() {
+        try {
+            for (DataAccessObject resource : resources) {
+                resource.closeConnection(); // Cerrar la conexión de cada recurso
+            }
+            logger.info("Recursos liberados correctamente.");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error al liberar recursos", e);
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        // Cierra todos los recursos cuando se llame directamente a close()
+        run();
+    }
 }
