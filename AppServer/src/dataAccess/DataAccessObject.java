@@ -219,6 +219,4 @@ public class DataAccessObject implements Signable {
             }
         }
     }
-
-   
 }

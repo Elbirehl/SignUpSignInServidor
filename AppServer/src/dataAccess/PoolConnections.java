@@ -17,8 +17,8 @@ import serverBusinessLogic.interfaces.Closable;
 
 /**
  * Class for managing a pool of database connections.
- *
- * Author: Olaia
+ *Irati cariño comenta el codigo cuando tengas tiempo libre
+ * Author: Irati
  */
 public class PoolConnections implements Closable {
 
