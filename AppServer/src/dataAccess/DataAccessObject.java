@@ -36,10 +36,11 @@ public class DataAccessObject implements Signable {
     private static final Logger logger = Logger.getLogger(DataAccessObject.class.getName());
 
     // Crear una instancia del pool de conexiones
-    private PoolConnections pool = new PoolConnections();
+    private final PoolConnections pool = new PoolConnections();
 
     /**
-     * ESTO VA A TENER QUE IR CON LA CLASE DE POOL
+     * 
+     * @return 
      */
     public Connection openConnection() {
         con = null;
@@ -72,11 +73,11 @@ public class DataAccessObject implements Signable {
      * Signs in a user to the system.
      *
      * @param user the user to sign in
-     * @return the signed-in user with updated information
-     * @throws
+     * @return the signed-in user with updated information     
      */
+    //Falta el maxthreadsErrorException que supongoq ue se manejara como tan el el worker que es el que extiende de hilos??
     @Override
-    public User signIn(User user) throws MaxThreadsErrorException, ServerErrorException, SignInErrorException,UserNotActiveException{
+    public User signIn(User user) throws MaxThreadsErrorException, ServerErrorException, SignInErrorException, UserNotActiveException {
         //signin
         final String USEREXISTS = "SELECT * FROM public.res_users WHERE login=? AND password=?";
         con = openConnection();
@@ -103,17 +104,15 @@ public class DataAccessObject implements Signable {
                     user.setZip(rs.getInt("zip"));
                     return user;
                 } else {
-                    logger.log(Level.WARNING, "Usuario inactivo. No puede iniciar sesión.");
-                    return null;
+                    throw new UserNotActiveException("El usuario está inactivo.");
                 }
             } else {
-                logger.log(Level.WARNING, "Usuario no encontrado.");
-                return null;
+                throw new SignInErrorException("Usuario no encontrado.");
             }
 
         } catch (SQLException e) {
-           logger.log(Level.SEVERE, "Error de SQL", e);
-           return null;
+            logger.log(Level.SEVERE, "Error de SQL", e);
+            throw new ServerErrorException("Error al acceder al servidor.");
         } finally {
             try {
                 if (rs != null) {
@@ -142,7 +141,8 @@ public class DataAccessObject implements Signable {
      * @param user the user to sign up
      * @return the registered user with updated information or null if
      * registration fails
-     * @throws SQLException if a database access error occurs
+     * @throws logicalExceptions.ServerErrorException
+     * @throws logicalExceptions.UserExistErrorException
      */
     @Override
     public User signUp(User user) throws ServerErrorException, UserExistErrorException {
@@ -160,9 +160,7 @@ public class DataAccessObject implements Signable {
             stmt.setString(1, user.getEmail());
             rs = stmt.executeQuery();
             if (rs.next()) {
-                // El usuario ya existe
-                logger.log(Level.INFO, "El usuario ya está registrado.");
-                return null;
+                throw new UserExistErrorException("El usuario ya está registrado.");
             }
 
             // Insertar el nuevo partner en la tabla res_partner
@@ -186,8 +184,7 @@ public class DataAccessObject implements Signable {
             }
 
             if (partnerId == -1) {
-                logger.log(Level.SEVERE, "Error al obtener el ID del partner.");
-                return null;
+                throw new ServerErrorException("Error al obtener el ID del partner.");
             }
 
             // Insertar el nuevo usuario en la tabla res_users
@@ -203,7 +200,7 @@ public class DataAccessObject implements Signable {
 
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Error al registrar el usuario", e);
-            return null;
+            throw new ServerErrorException("Error al registrar el usuario.");
         } finally {
             // Cerrar recursos
             try {
