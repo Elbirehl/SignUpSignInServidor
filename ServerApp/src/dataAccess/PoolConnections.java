@@ -23,7 +23,7 @@ import serverBusinessLogic.interfaces.Closable;
 public class PoolConnections implements Closable {
 
     private final String databaseUrl;
-    private final String userName;
+    private final String database;
     private final String password;
     private final int maxPoolSize;
     private int connNum = 0;
@@ -39,9 +39,9 @@ public class PoolConnections implements Closable {
      */
     public PoolConnections() {
         ResourceBundle resourceBundle = ResourceBundle.getBundle(CONFIGDATA);
-        this.databaseUrl = resourceBundle.getString("databaseUrl");
-        this.userName = resourceBundle.getString("userName");
-        this.password = resourceBundle.getString("password");
+        this.databaseUrl = resourceBundle.getString("URL");
+        this.database = resourceBundle.getString("db_user");
+        this.password = resourceBundle.getString("db_password");
         this.maxPoolSize = Integer.parseInt(resourceBundle.getString("maxPoolSize"));
         this.sqlVerifyConn = resourceBundle.getString("sqlVerifyConn"); // Cargar la consulta SQL
     }
@@ -64,7 +64,7 @@ public class PoolConnections implements Closable {
         if (!freePool.isEmpty()) {
             conn = freePool.pop();
         } else {
-            conn = DriverManager.getConnection(databaseUrl, userName, password);
+            conn = DriverManager.getConnection(databaseUrl, database, password);
             connNum++;
         }
         occupiedPool.add(conn);
@@ -74,7 +74,7 @@ public class PoolConnections implements Closable {
             occupiedPool.remove(conn);
             connNum--;
             conn.close();
-            conn = DriverManager.getConnection(databaseUrl, userName, password);
+            conn = DriverManager.getConnection(databaseUrl, database, password);
         }
         return conn;
     }
