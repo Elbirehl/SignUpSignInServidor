@@ -1,1 +1,4 @@
 /AppServer/dist/
+/ServerApp/build/
+/ServerApp/dist/
+/ServerApp/nbproject/private/

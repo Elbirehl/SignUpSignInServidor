@@ -25,17 +25,34 @@ import logicalModel.model.User;
  *
  * @author 2dam
  */
+//FALTA BUCLE CONTADOR DE HILO
 public class Worker extends Thread {
+
     private final Socket clientSocket;
     private Logger logger = Logger.getLogger(Worker.class.getName());
+    private static int contHilos = 0;
+
     public Worker(Socket clientSocket) {
         this.clientSocket = clientSocket;
+        incrementarContador();
+    }
+
+    public static int contarHilosActivos() {
+        return contHilos;
+    }
+
+    public synchronized void incrementarContador() {
+        contHilos++;
+    }
+
+    private synchronized void decrementarContador() {
+        contHilos--;
     }
 
     @Override
     public void run() {
         try (ObjectInputStream read = new ObjectInputStream(clientSocket.getInputStream());
-             ObjectOutputStream write = new ObjectOutputStream(clientSocket.getOutputStream())) {
+                ObjectOutputStream write = new ObjectOutputStream(clientSocket.getOutputStream())) {
 
             // Leer el mensaje del cliente
             Message request = (Message) read.readObject();
@@ -51,6 +68,7 @@ public class Worker extends Thread {
         } finally {
             try {
                 clientSocket.close();
+                decrementarContador();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -77,7 +95,8 @@ public class Worker extends Thread {
         } catch (ServerErrorException e) {
             response = new Message(null, MessageType.SERVER_ERROR);
         } catch (MaxThreadsErrorException ex) {
-            response = new Message(null, MessageType.MAX_THREADS_ERROR);        }
+            response = new Message(null, MessageType.MAX_THREADS_ERROR);
+        }
         return response;
     }
 }
