@@ -5,7 +5,7 @@
  */
 package serverBusinessLogic.threads;
 
-import dataAccess.DataAccessObject;
+import dataAccess.ServerFactory;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -25,39 +25,27 @@ import logicalModel.model.User;
  *
  * @author 2dam
  */
-//FALTA BUCLE CONTADOR DE HILO
 public class Worker extends Thread {
 
     private final Socket clientSocket;
+    private ObjectInputStream read;
+    private  ObjectOutputStream write;
     private Logger logger = Logger.getLogger(Worker.class.getName());
-    private static int contHilos = 0;
+  
 
     public Worker(Socket clientSocket) {
         this.clientSocket = clientSocket;
-        incrementarContador();
-    }
-
-    public static int contarHilosActivos() {
-        return contHilos;
-    }
-
-    public synchronized void incrementarContador() {
-        contHilos++;
-    }
-
-    private synchronized void decrementarContador() {
-        contHilos--;
     }
 
     @Override
     public void run() {
-        try (ObjectInputStream read = new ObjectInputStream(clientSocket.getInputStream());
-                ObjectOutputStream write = new ObjectOutputStream(clientSocket.getOutputStream())) {
-
+        try {
+            read = new ObjectInputStream(clientSocket.getInputStream());
+            write = new ObjectOutputStream(clientSocket.getOutputStream());
             // Leer el mensaje del cliente
             Message request = (Message) read.readObject();
-            DataAccessObject dao = new DataAccessObject();
-            Message response = handleRequest(request, dao);
+            
+            Message response = handleRequest(request);
 
             // Enviar la respuesta al cliente
             write.writeObject(response);
@@ -67,23 +55,24 @@ public class Worker extends Thread {
             logger.log(Level.SEVERE, "Error en el manejo del cliente: {0}", e.getMessage());
         } finally {
             try {
+                read.close();
+                write.close();
                 clientSocket.close();
-                decrementarContador();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private Message handleRequest(Message request, DataAccessObject dao) {
+    private Message handleRequest(Message request) {
         Message response = null;
         try {
             User responseUser = null;
             if (request.getMessage().equals(MessageType.SIGN_IN_REQUEST)) {
-                responseUser = dao.signIn(request.getUser());
+                responseUser = ServerFactory.getSignable().signIn(request.getUser());
                 response = new Message(responseUser, MessageType.OK_RESPONSE);
             } else if (request.getMessage().equals(MessageType.SIGN_UP_REQUEST)) {
-                responseUser = dao.signUp(request.getUser());
+                responseUser = ServerFactory.getSignable().signUp(request.getUser());
                 response = new Message(responseUser, MessageType.OK_RESPONSE);
             }
         } catch (UserNotActiveException e) {

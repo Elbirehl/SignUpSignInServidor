@@ -1,42 +1,56 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package serverBusinessLogic.threads;
 
-import dataAccess.DataAccessObject;
-import java.util.List;
+import static java.lang.System.exit;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import serverBusinessLogic.interfaces.PoolFactory;
 
 /**
- *
- * @author Olaia
+ * Thread to liberate resources when no active threads are present.
  */
-public class LiberatingThread extends Thread{
+public class LiberatingThread extends Thread {
 
-    private final List<DataAccessObject> resources;
     private static final Logger logger = Logger.getLogger(LiberatingThread.class.getName());
+    private Scanner scanner = new Scanner(System.in);
 
     /**
-     * Constructor de LiberatingThread que acepta una lista de recursos a cerrar.
-     *
-     * @param resources Los recursos que deben ser cerrados (DataAccessObject).
+     * Constructor de LiberatingThread.
      */
-    public LiberatingThread(List<DataAccessObject> resources) {
-        this.resources = resources;
+    public LiberatingThread() {
+        // Constructor vacío
     }
 
     @Override
     public void run() {
-        try {
-            for (DataAccessObject resource : resources) {
-                resource.closeConnection(); // Cerrar la conexión de cada recurso
+        String input;
+        logger.info("Server is currently running. If you want to finish it write: exit");
+        
+        do {
+            input = scanner.nextLine();
+        } while (!input.equalsIgnoreCase("exit"));
+
+        if ("exit".equalsIgnoreCase(input)) {
+            //if (Worker.contarHilosActivos() == 0) {
+                try {
+                    // No hay hilos activos
+                    PoolFactory.getPool().close();
+                    logger.info("Cerrando el servidor...");
+                    exit(0); //Una vez liberados los recursos cierra el sistema
+                } catch (Exception ex) {
+                    Logger.getLogger(LiberatingThread.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            //}
+        } else {
+            System.out.println("No funciona");
+
+            // Pausa breve para evitar un bucle apretado
+            try {
+                Thread.sleep(100); // Esperar un poco antes de volver a comprobar
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // Restaurar el estado de interrupción
+                logger.log(Level.WARNING, "El hilo liberador fue interrumpido", e);
             }
-            logger.info("Recursos liberados correctamente.");
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error al liberar recursos", e);
         }
     }
 }

@@ -1,10 +1,15 @@
 package application;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ResourceBundle;
-import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import logicalModel.message.Message;
+import logicalModel.message.MessageType;
+import serverBusinessLogic.threads.LiberatingThread;
 import serverBusinessLogic.threads.Worker;
 
 /**
@@ -13,71 +18,67 @@ import serverBusinessLogic.threads.Worker;
  */
 public class Server {
 
-    private ServerSocket serverSocket; // Mover serverSocket a nivel de clase
+    private ServerSocket serverSocket;
+    private static final ResourceBundle configFile = ResourceBundle.getBundle("config.config");
+    private static final int maxConnections = Integer.parseInt(configFile.getString("maxConnections"));
+    private static int connections = 0;
+    private static final Logger logger = Logger.getLogger(Worker.class.getName());
 
     public static void main(String[] args) {
-
         Server server = new Server();
         server.startServer();
+        closeWorker(); //ñie
     }
 
     public void startServer() {
-        // ServerSocket serverSocket = null;
-
         try {
-            ResourceBundle configFile = ResourceBundle.getBundle("config.config");
+
             int port = Integer.parseInt(configFile.getString("PORT"));
             serverSocket = new ServerSocket(port);
-
             System.out.println("Servidor iniciado en el puerto " + port);
 
-            // Hilo para leer teclado
-            Thread readKeyboardThread = new Thread(this::readKeyboard);
-            readKeyboardThread.start();
+            // Calls the method waitClose that creates a thread that is in charge of clossing the server.
+            waitClose();
 
-            do {
+            while (true) {
                 // Espera una conexión de cliente
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Cliente conectado desde: " + clientSocket.getInetAddress());
-
+                
                 // Crear y lanzar un nuevo Worker para el cliente
-                Worker worker = new Worker(clientSocket);
-                worker.start();
+                if (connections < Integer.parseInt(ResourceBundle.getBundle("config.config").getString("maxConnections"))) {
+                    System.out.println("Numero connections" + connections + " Numero maxconncecion" + Integer.parseInt(ResourceBundle.getBundle("config.config").getString("maxConnections")));
+                    Worker worker = new Worker(clientSocket);
+                    worker.start();
+                    connections++;
+                } else {
+                    try {
+                        // Gets an ObjectOutputStream to write.
+                        ObjectOutputStream write = new ObjectOutputStream(clientSocket.getOutputStream());
+                        // Creates a responde for the client.
+                        Message response = new Message(null, MessageType.MAX_THREADS_ERROR);
+                        // Sends the response to the client.
+                        write.writeObject(response);
+                    } catch (IOException ex1) {
+                        Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex1);
+                    }
 
-                //bucle tecla 
-            } while (true); //usar lo del key = esc
-            //Llamar el hilo liberador que tiene lo del contador de hilos = a 0
-        } catch (IOException e) {
-            System.out.println("Error al iniciar el servidor: " + e.getMessage());
-        } finally {
-            stopServer();
-        }
-    }
-
-    private void readKeyboard() {
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            String input = scanner.nextLine();
-            if ("ESC".equalsIgnoreCase(input)) {
-                stopServer();
-                break; // Salir del bucle al cerrar el servidor
+                }
             }
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private void stopServer() {
-        try {
-            // Si el serverSocket no es nulo, cierra la conexión del servidor
-            if (serverSocket != null && !serverSocket.isClosed()) {
-                serverSocket.close();
-                System.out.println("ServerSocket cerrado.");
-            }
-        } catch (IOException e) {
-            System.out.println("Error al cerrar el ServerSocket: " + e.getMessage());
-        }
-
-        System.out.println("Servidor cerrado.");
-        System.exit(0); // Cerrar la aplicación
+    public synchronized static void closeWorker() {
+        logger.info("Closing the connection.");
+        // Decrease the connections' counter
+        connections--;
     }
 
+    public static void waitClose() {
+        logger.info("Initializing the thread that waits for closing the server");
+        LiberatingThread close = new LiberatingThread();
+        close.start();
+    }
 }

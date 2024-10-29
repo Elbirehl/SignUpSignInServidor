@@ -10,6 +10,7 @@ package serverBusinessLogic.interfaces;
  * @author 2dam
  */
 public interface Closable {
-
-    public void close() throws Exception;
+     
+     public void close() throws Exception;
+    
 }

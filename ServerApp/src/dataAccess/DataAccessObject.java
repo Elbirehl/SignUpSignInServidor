@@ -51,16 +51,16 @@ public class DataAccessObject implements Signable {
         return con;
     }
 
-    /**
-     * ESTO VA A TENER QUE IR CON LA CLASE DE POOL
-     */
+    
     public void closeConnection() {
         try {
+            if (rs != null) {
+                    rs.close();
+                }
             if (stmt != null) {
                 stmt.close();
             }
             if (con != null) {
-                // En lugar de cerrar, devolver la conexión al pool
                 pool.returnConnection(con);
             }
         } catch (SQLException ex) {
@@ -113,19 +113,7 @@ public class DataAccessObject implements Signable {
             logger.log(Level.SEVERE, "Error de SQL", e);
             throw new ServerErrorException("Error al acceder al servidor.");
         } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (con != null) {
-                    con.close();
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
+          closeConnection();
         }
 
     }
@@ -201,20 +189,7 @@ public class DataAccessObject implements Signable {
             logger.log(Level.SEVERE, "Error al registrar el usuario", e);
             throw new ServerErrorException("Error al registrar el usuario.");
         } finally {
-            // Cerrar recursos
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (con != null) {
-                    con.close();
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
+            closeConnection();
         }
     }
 }

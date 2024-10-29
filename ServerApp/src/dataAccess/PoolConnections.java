@@ -9,16 +9,15 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashSet;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import serverBusinessLogic.interfaces.Closable;
 
 /**
- * Class for managing a pool of database connections.
- *Irati cariño comenta el codigo cuando tengas tiempo libre
- * Author: Irati
+ * Class for managing a pool of database connections. Irati cariño comenta el
+ * codigo cuando tengas tiempo libre Author: Irati
  */
 public class PoolConnections implements Closable {
 
@@ -28,22 +27,29 @@ public class PoolConnections implements Closable {
     private final int maxPoolSize;
     private int connNum = 0;
     private final String sqlVerifyConn;
+    private static final Logger logger = Logger.getLogger(PoolConnections.class.getName());
 
     private static final String CONFIGDATA = "config.config";
 
-    private final Stack<Connection> freePool = new Stack<>();
-    private final Set<Connection> occupiedPool = new HashSet<>();
+    private final Stack<Connection> freePool;
+    private final Stack<Connection> occupiedPool; 
 
     /**
      * Constructor that initializes the connection pool.
      */
     public PoolConnections() {
+        this.freePool= new Stack<>();
+        this.occupiedPool= new Stack<>();
         ResourceBundle resourceBundle = ResourceBundle.getBundle(CONFIGDATA);
         this.databaseUrl = resourceBundle.getString("URL");
         this.database = resourceBundle.getString("db_user");
         this.password = resourceBundle.getString("db_password");
-        this.maxPoolSize = Integer.parseInt(resourceBundle.getString("maxPoolSize"));
+        this.maxPoolSize = Integer.parseInt(resourceBundle.getString("maxConnections"));
         this.sqlVerifyConn = resourceBundle.getString("sqlVerifyConn"); // Cargar la consulta SQL
+    }
+
+    public Stack<Connection> getOccupiedPool() {
+        return occupiedPool;
     }
 
     /**
@@ -78,6 +84,7 @@ public class PoolConnections implements Closable {
         }
         return conn;
     }
+
     //Se utiliza para verificar que una conexión de la base de datos esté activa y funcionando correctamente antes de entregarla a una solicitud. 
     //Es un mecanismo de validación para asegurarse de que las conexiones que están inactivas en el pool no se hayan desconectado o dañado debido a razones externas, como un tiempo de espera prolongado o problemas de red.
     private boolean isConnectionActive(Connection conn) {
@@ -87,6 +94,10 @@ public class PoolConnections implements Closable {
         } catch (SQLException e) {
             return false;
         }
+    }
+
+    public int getActiveConnections() {
+        return occupiedPool.size();
     }
 
     /**
@@ -100,18 +111,21 @@ public class PoolConnections implements Closable {
         if (conn == null) {
             throw new NullPointerException("Connection cannot be null.");
         }
-        if (!occupiedPool.remove(conn)) {
-            throw new SQLException("The connection is returned already or it isn't for this pool");
+        if (conn != null) {
+            freePool.push(conn);
+            logger.info("Returning the connection");
+
         }
-        freePool.push(conn);
     }
 
     @Override
     public void close() throws Exception {
         // Cerrar todas las conexiones ocupadas
         for (Connection conn : occupiedPool) {
-            if (conn != null && !conn.isClosed()) {
+            try {
                 conn.close();
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, null, e);
             }
         }
         occupiedPool.clear();
@@ -119,8 +133,10 @@ public class PoolConnections implements Closable {
         // Cerrar todas las conexiones libres
         while (!freePool.isEmpty()) {
             Connection conn = freePool.pop();
-            if (conn != null && !conn.isClosed()) {
+            try {
                 conn.close();
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, null, e);
             }
         }
         connNum = 0; // Restablecer el número de conexiones activas
