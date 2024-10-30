@@ -45,7 +45,7 @@ public class PoolConnections implements Closable {
         this.database = resourceBundle.getString("db_user");
         this.password = resourceBundle.getString("db_password");
         this.maxPoolSize = Integer.parseInt(resourceBundle.getString("maxConnections"));
-        this.sqlVerifyConn = resourceBundle.getString("sqlVerifyConn"); // Cargar la consulta SQL
+        this.sqlVerifyConn = resourceBundle.getString("sqlVerifyConn");
     }
 
     public Stack<Connection> getOccupiedPool() {
@@ -86,7 +86,7 @@ public class PoolConnections implements Closable {
     }
 
     //Se utiliza para verificar que una conexión de la base de datos esté activa y funcionando correctamente antes de entregarla a una solicitud. 
-    //Es un mecanismo de validación para asegurarse de que las conexiones que están inactivas en el pool no se hayan desconectado o dañado debido a razones externas, como un tiempo de espera prolongado o problemas de red.
+  
     private boolean isConnectionActive(Connection conn) {
         try (Statement st = conn.createStatement()) {
             st.executeQuery(sqlVerifyConn);
@@ -120,7 +120,7 @@ public class PoolConnections implements Closable {
 
     @Override
     public void close() throws Exception {
-        // Cerrar todas las conexiones ocupadas
+        // Close all busy connections
         for (Connection conn : occupiedPool) {
             try {
                 conn.close();
@@ -130,7 +130,7 @@ public class PoolConnections implements Closable {
         }
         occupiedPool.clear();
 
-        // Cerrar todas las conexiones libres
+        //Close all free connections
         while (!freePool.isEmpty()) {
             Connection conn = freePool.pop();
             try {
@@ -139,6 +139,6 @@ public class PoolConnections implements Closable {
                 logger.log(Level.SEVERE, null, e);
             }
         }
-        connNum = 0; // Restablecer el número de conexiones activas
+        connNum = 0;
     }
 }

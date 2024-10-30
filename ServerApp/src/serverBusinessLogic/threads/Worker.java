@@ -5,6 +5,7 @@
  */
 package serverBusinessLogic.threads;
 
+import application.Server;
 import dataAccess.ServerFactory;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -37,27 +38,29 @@ public class Worker extends Thread {
         this.clientSocket = clientSocket;
     }
 
+
     @Override
     public void run() {
         try {
             read = new ObjectInputStream(clientSocket.getInputStream());
             write = new ObjectOutputStream(clientSocket.getOutputStream());
-            // Leer el mensaje del cliente
+            // Read the customer's message
             Message request = (Message) read.readObject();
             
             Message response = handleRequest(request);
 
-            // Enviar la respuesta al cliente
+            //Send the response to the client
             write.writeObject(response);
-            logger.info("Respuesta enviada al cliente.");
+            logger.info("Response sent to client.");
 
         } catch (IOException | ClassNotFoundException e) {
-            logger.log(Level.SEVERE, "Error en el manejo del cliente: {0}", e.getMessage());
+            logger.log(Level.SEVERE, "Client handling error: {0}", e.getMessage());
         } finally {
             try {
                 read.close();
                 write.close();
                 clientSocket.close();
+                Server.closeWorker();
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -14,20 +14,19 @@ import serverBusinessLogic.threads.Worker;
 
 /**
  *
- * @author 2dam
+ * @author Irati, Elbire, Meylin and Olaia
  */
 public class Server {
 
     private ServerSocket serverSocket;
     private static final ResourceBundle configFile = ResourceBundle.getBundle("config.config");
-    private static final int maxConnections = Integer.parseInt(configFile.getString("maxConnections"));
+    private static final int maxConnections = Integer.parseInt(ResourceBundle.getBundle("config.config").getString("maxConnections"));
     private static int connections = 0;
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
 
     public static void main(String[] args) {
         Server server = new Server();
         server.startServer();
-        closeWorker(); //ñie
     }
 
     public void startServer() {
@@ -35,22 +34,36 @@ public class Server {
 
             int port = Integer.parseInt(configFile.getString("PORT"));
             serverSocket = new ServerSocket(port);
-            System.out.println("Servidor iniciado en el puerto " + port);
+            logger.info("Server started on port " + port);
 
             // Calls the method waitClose that creates a thread that is in charge of clossing the server.
             waitClose();
 
             while (true) {
-                // Espera una conexión de cliente
+                // Waits for a client connection
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("Cliente conectado desde: " + clientSocket.getInetAddress());
-                
-                // Crear y lanzar un nuevo Worker para el cliente
-                if (connections < Integer.parseInt(ResourceBundle.getBundle("config.config").getString("maxConnections"))) {
-                    System.out.println("Numero connections" + connections + " Numero maxconncecion" + Integer.parseInt(ResourceBundle.getBundle("config.config").getString("maxConnections")));
+                logger.info("Client conected from: " + clientSocket.getInetAddress());
+
+                // Create and throw a new Worker for the Client 
+                if (connections < maxConnections) {
                     Worker worker = new Worker(clientSocket);
-                    worker.start();
-                    connections++;
+                    //Just in case a Worker can't be created 
+                    if (worker != null) {
+                        worker.start();
+                        connections++;
+                    } else {
+                        try {
+                            // Gets an ObjectOutputStream to write.
+                            ObjectOutputStream write = new ObjectOutputStream(clientSocket.getOutputStream());
+                            // Creates a responde for the client.
+                            Message response = new Message(null, MessageType.SERVER_ERROR);
+                            // Sends the response to the client.
+                            write.writeObject(response);
+                        } catch (NullPointerException e) {
+                            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, "Worker is null", e);
+                        }
+
+                    }
                 } else {
                     try {
                         // Gets an ObjectOutputStream to write.
@@ -70,6 +83,9 @@ public class Server {
         }
     }
 
+    /**
+     *
+     */
     public synchronized static void closeWorker() {
         logger.info("Closing the connection.");
         // Decrease the connections' counter

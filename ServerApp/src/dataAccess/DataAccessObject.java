@@ -46,7 +46,7 @@ public class DataAccessObject implements Signable {
         try {
             con = pool.getConnection();
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Error al intentar abrir la BD: {0}", e.getMessage());
+            logger.log(Level.SEVERE, "Error when trying to open the database: {0}", e.getMessage());
         }
         return con;
     }
@@ -103,15 +103,15 @@ public class DataAccessObject implements Signable {
                     user.setZip(rs.getInt("zip"));
                     return user;
                 } else {
-                    throw new UserNotActiveException("El usuario está inactivo.");
+                    throw new UserNotActiveException("The user is inactive.");
                 }
             } else {
-                throw new SignInErrorException("Usuario no encontrado.");
+                throw new SignInErrorException("User not found");
             }
 
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Error de SQL", e);
-            throw new ServerErrorException("Error al acceder al servidor.");
+            logger.log(Level.SEVERE, "SQL error", e);
+            throw new ServerErrorException("Error accessing the server.");
         } finally {
           closeConnection();
         }
@@ -142,15 +142,15 @@ public class DataAccessObject implements Signable {
         stmt = null;
         rs = null;
         try {
-            // Verificar si el usuario ya existe
+            // Check if the user already exists
             stmt = con.prepareStatement(EMAILEXISTS);
             stmt.setString(1, user.getEmail());
             rs = stmt.executeQuery();
             if (rs.next()) {
-                throw new UserExistErrorException("El usuario ya está registrado.");
+                throw new UserExistErrorException("The user is already registered.");
             }
 
-            // Insertar el nuevo partner en la tabla res_partner
+            // Insert the new partner into the res_partner table
             stmt = con.prepareStatement(INSERTPARTNER);
             stmt.setString(1, user.getName());
             stmt.setString(2, user.getStreet());
@@ -161,7 +161,7 @@ public class DataAccessObject implements Signable {
             stmt.setInt(7, user.getMobile());
             stmt.executeUpdate();
 
-            // Obtener el ID del partner recién creado
+            // Get the ID of the newly created partner
             stmt = con.prepareStatement(SELECTPARTNER);
             stmt.setString(1, user.getEmail());
             rs = stmt.executeQuery();
@@ -171,10 +171,10 @@ public class DataAccessObject implements Signable {
             }
 
             if (partnerId == -1) {
-                throw new ServerErrorException("Error al obtener el ID del partner.");
+                throw new ServerErrorException("Error getting partner ID.");
             }
 
-            // Insertar el nuevo usuario en la tabla res_users
+            // Insert the new user into the res_users table
             stmt = con.prepareStatement(INSERTUSER);
             stmt.setInt(1, partnerId);
             stmt.setBoolean(2, user.isActive());
@@ -182,12 +182,12 @@ public class DataAccessObject implements Signable {
             stmt.setString(4, user.getPasswd());
             stmt.executeUpdate();
 
-            logger.log(Level.INFO, "Usuario registrado exitosamente.");
+            logger.log(Level.INFO, "User successfully registered.");
             return user;
 
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Error al registrar el usuario", e);
-            throw new ServerErrorException("Error al registrar el usuario.");
+            logger.log(Level.SEVERE, "Error registering user", e);
+            throw new ServerErrorException("Error registering user");
         } finally {
             closeConnection();
         }

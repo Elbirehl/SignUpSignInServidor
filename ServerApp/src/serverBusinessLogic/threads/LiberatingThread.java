@@ -18,7 +18,7 @@ public class LiberatingThread extends Thread {
      * Constructor de LiberatingThread.
      */
     public LiberatingThread() {
-        // Constructor vacío
+        //Empty constructor
     }
 
     @Override
@@ -31,25 +31,19 @@ public class LiberatingThread extends Thread {
         } while (!input.equalsIgnoreCase("exit"));
 
         if ("exit".equalsIgnoreCase(input)) {
-            //if (Worker.contarHilosActivos() == 0) {
                 try {
-                    // No hay hilos activos
                     PoolFactory.getPool().close();
-                    logger.info("Cerrando el servidor...");
-                    exit(0); //Una vez liberados los recursos cierra el sistema
+                    logger.info("Closing server...");
+                    exit(0); //Once the resources are released, close the system
                 } catch (Exception ex) {
                     Logger.getLogger(LiberatingThread.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            //}
         } else {
-            System.out.println("No funciona");
-
-            // Pausa breve para evitar un bucle apretado
             try {
-                Thread.sleep(100); // Esperar un poco antes de volver a comprobar
+                Thread.sleep(100); // Wait before checking again
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt(); // Restaurar el estado de interrupción
-                logger.log(Level.WARNING, "El hilo liberador fue interrumpido", e);
+                Thread.currentThread().interrupt(); // Restore interrupt state
+                logger.log(Level.WARNING, "The liberating thread was interrupted", e);
             }
         }
     }
