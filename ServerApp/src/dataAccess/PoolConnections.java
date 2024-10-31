@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import serverBusinessLogic.interfaces.Closable;
 
 /**
-<<<<<<< HEAD
  * Class for managing a pool of database connections. PoolConnections is
  * responsible for managing a pool of database connections to optimize resource
  * usage by reusing connections rather than creating and closing them
@@ -21,22 +20,6 @@ import serverBusinessLogic.interfaces.Closable;
  *
  * The connection pool is configured via a properties file specified in , where
  * database URL, credentials, and maximum connections can be set.
- *
- * @author Irati, Elbire, Meylin, Olaia
-=======
- * PoolConnections is responsible for managing a pool of database connections to
- * optimize resource usage by reusing connections rather than creating and
- * closing them repeatedly. It supports a configurable maximum pool size, and
- * tracks active and available connections using stacks for free and occupied
- * connections.
- *
- * <p>
- * The connection pool is configured via a properties file specified in
- * {@code CONFIGDATA}, where database URL, credentials, and maximum connections
- * can be set.</p>
- *
- * @author Irati, Elbire, Meylin and Olaia
->>>>>>> 122c380ee2608f37d705cc88538466f9e4617ba8
  *
  */
 public class PoolConnections implements Closable {
@@ -55,14 +38,10 @@ public class PoolConnections implements Closable {
     private final Stack<Connection> occupiedPool;
 
     /**
-<<<<<<< HEAD
-     * Constructor that initializes the connection pool.
-=======
->>>>>>> 122c380ee2608f37d705cc88538466f9e4617ba8
      *
-     * Initializes the connection pool by loading database configuration from
-     * the properties file and setting up the free and occupied connection
-     * stacks.
+     * Constructor that initializes the connection pool. Initializes the
+     * connection pool by loading database configuration from the properties
+     * file and setting up the free and occupied connection stacks.
      */
     public PoolConnections() {
         this.freePool = new Stack<>();
@@ -76,15 +55,10 @@ public class PoolConnections implements Closable {
     }
 
     /**
-<<<<<<< HEAD
+     *
      * Get an available connection from the pool. Provides an available
      * connection from the pool. If no free connection is available, a new one
      * is created unless the pool has reached its maximum size
-=======
-     * Provides an available connection from the pool. If no free connection is
-     * available, a new one is created unless the pool has reached its maximum
-     * size
->>>>>>> 122c380ee2608f37d705cc88538466f9e4617ba8
      *
      * @return An available connection
      * @throws SQLException Fail to get an available connection
@@ -120,11 +94,7 @@ public class PoolConnections implements Closable {
      * Checks if a database connection is active by executing a verification SQL
      * statement.
      *
-<<<<<<< HEAD
      * @param conn the to verify
-=======
-     * @param conn the {@link Connection} to verify
->>>>>>> 122c380ee2608f37d705cc88538466f9e4617ba8
      * @return true if the connection is active; false otherwise
      */
     private boolean isConnectionActive(Connection conn) {
@@ -137,11 +107,8 @@ public class PoolConnections implements Closable {
     }
 
     /**
-<<<<<<< HEAD
+     *
      * Returns a connection back to the pool after it is no longer in use. *
-=======
-     * Returns a connection back to the pool after it is no longer in use.
->>>>>>> 122c380ee2608f37d705cc88538466f9e4617ba8
      *
      * @param conn The connection
      * @throws SQLException When the connection is returned already or it isn't

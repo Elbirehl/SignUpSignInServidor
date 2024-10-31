@@ -17,7 +17,6 @@ import logicalModel.message.Message;
 import logicalModel.message.MessageType;
 import logicalModel.model.User;
 
-<<<<<<< HEAD
 /**
  * Worker is a thread responsible for handling client-server interactions in the
  * server's business logic layer. It listens to client requests, processes them,
@@ -26,16 +25,6 @@ import logicalModel.model.User;
  * exceptions relevant to user authentication and server response errors.
  *
  * @author Irati, Elbire, Meylin, Olaia
-=======
-/*
- *  * Worker is a thread responsible for handling client-server interactions
- * in the server's business logic layer. It listens to client requests,
- * processes them, and sends back responses according to request type.
- * This class uses an instance of Socket to manage communication with clients,
- * and it handles exceptions relevant to user authentication and server
- * response errors.
- *  @author Irati, Elbire, Meylind and Olaia
->>>>>>> 122c380ee2608f37d705cc88538466f9e4617ba8
  */
 public class Worker extends Thread {
 
@@ -56,7 +45,7 @@ public class Worker extends Thread {
     /**
      * Runs the worker thread, initializing input/output streams and handling
      * requests received from the client socket. This method reads a request
-     * message, processes it through {@code handleRequest()}, and sends an
+     * message, processes it through, and sends an
      * appropriate response back to the client.
      */
     @Override
