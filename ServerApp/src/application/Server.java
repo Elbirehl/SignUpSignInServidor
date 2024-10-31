@@ -89,7 +89,7 @@ public class Server {
                     try {
                         // Gets an ObjectOutputStream to write.
                         ObjectOutputStream write = new ObjectOutputStream(clientSocket.getOutputStream());
-                        // Creates a responde for the client.
+                        // Creates a response for the client.
                         Message response = new Message(null, MessageType.MAX_THREADS_ERROR);
                         // Sends the response to the client.
                         write.writeObject(response);
@@ -119,7 +119,7 @@ public class Server {
      * thread listens for a specific signal to gracefully close the server.
      */
     public static void waitClose() {
-        logger.info("Initializing the thread that waits for closing the server");
+        logger.info("Initializing the thread to listen for server shutdown requests");
         LiberatingThread close = new LiberatingThread();
         close.start();
     }
