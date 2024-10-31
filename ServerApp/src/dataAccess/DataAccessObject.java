@@ -21,7 +21,11 @@ import logicalModel.model.User;
  * This class handles the interactions with the PostgreSQL database, including
  * user registration and login functionality.
  *
+<<<<<<< HEAD
  * @author Irati, Meylin, Olaia, Elbire
+=======
+ * @author Irati, Olaia and Elbire
+>>>>>>> 122c380ee2608f37d705cc88538466f9e4617ba8
  */
 public class DataAccessObject implements Signable {
 
@@ -75,7 +79,10 @@ public class DataAccessObject implements Signable {
      *
      * @param user the user to sign in
      * @return the signed-in user with updated information
+<<<<<<< HEAD
      * @return the signed-in user with updated information
+=======
+>>>>>>> 122c380ee2608f37d705cc88538466f9e4617ba8
      * @throws MaxThreadsErrorException if the maximum number of allowed
      * concurrent threads has been exceeded
      * @throws ServerErrorException if there is an error when accessing the
@@ -86,7 +93,6 @@ public class DataAccessObject implements Signable {
      */
     @Override
     public User signIn(User user) throws MaxThreadsErrorException, ServerErrorException, SignInErrorException, UserNotActiveException {
-        //signin
         final String USEREXISTS = "SELECT * FROM public.res_users u, public.res_partner p WHERE p.id = u.partner_id AND login=? AND password=?";
         con = openConnection();
         stmt = null;
