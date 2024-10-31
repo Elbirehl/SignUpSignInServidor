@@ -71,7 +71,7 @@ public class Server {
                     //Just in case a Worker can't be created 
                     if (worker != null) {
                         worker.start();
-                        connections++;
+                        openWorker();
                     } else {
                         try {
                             // Gets an ObjectOutputStream to write.
@@ -108,6 +108,12 @@ public class Server {
      * Decreases the active connections count. This method is synchronized to
      * ensure thread safety when modifying the connection counter.
      */
+      public synchronized static void openWorker() {
+        logger.info("Opening the connection.");
+        // Decrease the connections' counter
+        connections++;
+    }
+      
     public synchronized static void closeWorker() {
         logger.info("Closing the connection.");
         // Decrease the connections' counter
