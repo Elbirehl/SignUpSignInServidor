@@ -13,6 +13,15 @@ import serverBusinessLogic.threads.LiberatingThread;
 import serverBusinessLogic.threads.Worker;
 
 /**
+ * Represents a server application that listens for incoming client connections,
+ * manages worker threads to handle each connection, and enforces a maximum
+ * number of simultaneous connections. If the maximum limit is reached, the
+ * server sends an error response to the client and maintains a connection
+ * counter to manage active threads.
+ *
+ * The server configuration is specified in a config file, including settings
+ * for port and maximum connections. This class also creates a dedicated thread
+ * to listen for server shutdown requests.
  *
  * @author Irati, Elbire, Meylin and Olaia
  */
@@ -24,11 +33,23 @@ public class Server {
     private static int connections = 0;
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
 
+    /**
+     * Main method to launch the server application.
+     *
+     * @param args command line arguments (not used)
+     */
     public static void main(String[] args) {
         Server server = new Server();
         server.startServer();
     }
 
+    /**
+     * Starts the server by initializing a ServerSocket to listen on the
+     * configured port. Accepts incoming client connections and starts a new
+     * Worker thread for each connection, provided the maximum number of
+     * connections has not been reached. If the limit is exceeded, an error
+     * message is sent to the client.
+     */
     public void startServer() {
         try {
 
@@ -68,7 +89,7 @@ public class Server {
                     try {
                         // Gets an ObjectOutputStream to write.
                         ObjectOutputStream write = new ObjectOutputStream(clientSocket.getOutputStream());
-                        // Creates a responde for the client.
+                        // Creates a response for the client.
                         Message response = new Message(null, MessageType.MAX_THREADS_ERROR);
                         // Sends the response to the client.
                         write.writeObject(response);
@@ -84,7 +105,8 @@ public class Server {
     }
 
     /**
-     *
+     * Decreases the active connections count. This method is synchronized to
+     * ensure thread safety when modifying the connection counter.
      */
       public synchronized static void openWorker() {
         logger.info("Opening the connection.");
@@ -98,8 +120,12 @@ public class Server {
         connections--;
     }
 
+    /**
+     * Starts a LiberatingThread to handle server shutdown operations. This
+     * thread listens for a specific signal to gracefully close the server.
+     */
     public static void waitClose() {
-        logger.info("Initializing the thread that waits for closing the server");
+        logger.info("Initializing the thread to listen for server shutdown requests");
         LiberatingThread close = new LiberatingThread();
         close.start();
     }
