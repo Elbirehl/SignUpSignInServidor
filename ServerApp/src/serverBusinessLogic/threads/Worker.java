@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package serverBusinessLogic.threads;
 
 import application.Server;
@@ -23,22 +18,36 @@ import logicalModel.message.MessageType;
 import logicalModel.model.User;
 
 /**
+ * Worker is a thread responsible for handling client-server interactions in the
+ * server's business logic layer. It listens to client requests, processes them,
+ * and sends back responses according to request type. This class uses an
+ * instance of Socket to manage communication with clients, and it handles
+ * exceptions relevant to user authentication and server response errors.
  *
- * @author 2dam
+ * @author Irati, Elbire, Meylin, Olaia
  */
 public class Worker extends Thread {
 
     private final Socket clientSocket;
     private ObjectInputStream read;
-    private  ObjectOutputStream write;
+    private ObjectOutputStream write;
     private Logger logger = Logger.getLogger(Worker.class.getName());
-  
 
+    /**
+     * Constructs a new Worker with a specified client socket.
+     *
+     * @param clientSocket the socket connected to the client
+     */
     public Worker(Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
 
-
+    /**
+     * Runs the worker thread, initializing input/output streams and handling
+     * requests received from the client socket. This method reads a request
+     * message, processes it through {@code handleRequest()}, and sends an
+     * appropriate response back to the client.
+     */
     @Override
     public void run() {
         try {
@@ -46,7 +55,7 @@ public class Worker extends Thread {
             write = new ObjectOutputStream(clientSocket.getOutputStream());
             // Read the customer's message
             Message request = (Message) read.readObject();
-            
+
             Message response = handleRequest(request);
 
             //Send the response to the client
@@ -67,6 +76,16 @@ public class Worker extends Thread {
         }
     }
 
+    /**
+     * Handles incoming client requests and returns a response message. Based on
+     * the message type, it processes the request for sign-in or sign-up, or
+     * catches any custom exception types related to authentication and server
+     * errors.
+     *
+     * @param request the message received from the client
+     * @return a response message containing the result of the request
+     * processing
+     */
     private Message handleRequest(Message request) {
         Message response = null;
         try {

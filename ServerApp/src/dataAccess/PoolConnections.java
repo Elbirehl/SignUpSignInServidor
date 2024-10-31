@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package dataAccess;
 
 import java.sql.Connection;
@@ -16,8 +11,18 @@ import java.util.logging.Logger;
 import serverBusinessLogic.interfaces.Closable;
 
 /**
- * Class for managing a pool of database connections. Irati cariño comenta el
- * codigo cuando tengas tiempo libre Author: Irati
+ * Class for managing a pool of database connections. PoolConnections is
+ * responsible for managing a pool of database connections to optimize resource
+ * usage by reusing connections rather than creating and closing them
+ * repeatedly. It supports a configurable maximum pool size, and tracks active
+ * and available connections using stacks for free and occupied connections.
+ *
+ *
+ * The connection pool is configured via a properties file specified in , where
+ * database URL, credentials, and maximum connections can be set.
+ *
+ * @author Irati, Elbire, Meylin, Olaia
+ *
  */
 public class PoolConnections implements Closable {
 
@@ -32,14 +37,18 @@ public class PoolConnections implements Closable {
     private static final String CONFIGDATA = "config.config";
 
     private final Stack<Connection> freePool;
-    private final Stack<Connection> occupiedPool; 
+    private final Stack<Connection> occupiedPool;
 
     /**
      * Constructor that initializes the connection pool.
+     *
+     * Initializes the connection pool by loading database configuration from
+     * the properties file and setting up the free and occupied connection
+     * stacks.
      */
     public PoolConnections() {
-        this.freePool= new Stack<>();
-        this.occupiedPool= new Stack<>();
+        this.freePool = new Stack<>();
+        this.occupiedPool = new Stack<>();
         ResourceBundle resourceBundle = ResourceBundle.getBundle(CONFIGDATA);
         this.databaseUrl = resourceBundle.getString("URL");
         this.database = resourceBundle.getString("db_user");
@@ -53,7 +62,9 @@ public class PoolConnections implements Closable {
     }
 
     /**
-     * Get an available connection from the pool.
+     * Get an available connection from the pool. Provides an available
+     * connection from the pool. If no free connection is available, a new one
+     * is created unless the pool has reached its maximum size
      *
      * @return An available connection
      * @throws SQLException Fail to get an available connection
@@ -85,8 +96,13 @@ public class PoolConnections implements Closable {
         return conn;
     }
 
-    //Se utiliza para verificar que una conexión de la base de datos esté activa y funcionando correctamente antes de entregarla a una solicitud. 
-  
+    /**
+     * Checks if a database connection is active by executing a verification SQL
+     * statement.
+     *
+     * @param conn the to verify
+     * @return true if the connection is active; false otherwise
+     */
     private boolean isConnectionActive(Connection conn) {
         try (Statement st = conn.createStatement()) {
             st.executeQuery(sqlVerifyConn);
@@ -101,7 +117,7 @@ public class PoolConnections implements Closable {
     }
 
     /**
-     * Return a connection to the pool.
+     * Returns a connection back to the pool after it is no longer in use. *
      *
      * @param conn The connection
      * @throws SQLException When the connection is returned already or it isn't
@@ -118,6 +134,12 @@ public class PoolConnections implements Closable {
         }
     }
 
+    /**
+     * Closes all connections in the pool, both occupied and free, effectively
+     * releasing all resources used by the pool.
+     *
+     * @throws Exception if any connection fails to close
+     */
     @Override
     public void close() throws Exception {
         // Close all busy connections

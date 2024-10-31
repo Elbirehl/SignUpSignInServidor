@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package dataAccess;
 
 import java.sql.Connection;
@@ -18,6 +13,7 @@ import logicalExceptions.UserExistErrorException;
 import logicalExceptions.UserNotActiveException;
 import logicalModel.interfaces.Signable;
 import logicalModel.model.User;
+
 /**
  * DataAccessObject class that manages database connections and implements the
  * Signable interface for user operations.
@@ -25,7 +21,7 @@ import logicalModel.model.User;
  * This class handles the interactions with the PostgreSQL database, including
  * user registration and login functionality.
  *
- * @author Irati, Meylin, Olaia and Elbire
+ * @author Irati, Meylin, Olaia, Elbire
  */
 public class DataAccessObject implements Signable {
 
@@ -34,12 +30,14 @@ public class DataAccessObject implements Signable {
     private ResultSet rs;
     private static final Logger logger = Logger.getLogger(DataAccessObject.class.getName());
 
-    // Crear una instancia del pool de conexiones
+    // Create an instance of the connection pool.
     private final PoolConnections pool = new PoolConnections();
 
     /**
-     * 
-     * @return 
+     * Opens a connection to the database.
+     *
+     * @return a Connection object representing the database connection, or null
+     * if the connection could not be established.
      */
     public Connection openConnection() {
         con = null;
@@ -51,12 +49,16 @@ public class DataAccessObject implements Signable {
         return con;
     }
 
-    
+    /**
+     * Closes the connection to the database and releases any resources held.
+     * This method closes the ResultSet, PreparedStatement, and returns the
+     * Connection to the connection pool if they are open.
+     */
     public void closeConnection() {
         try {
             if (rs != null) {
-                    rs.close();
-                }
+                rs.close();
+            }
             if (stmt != null) {
                 stmt.close();
             }
@@ -72,9 +74,16 @@ public class DataAccessObject implements Signable {
      * Signs in a user to the system.
      *
      * @param user the user to sign in
-     * @return the signed-in user with updated information     
+     * @return the signed-in user with updated information
+     * @return the signed-in user with updated information
+     * @throws MaxThreadsErrorException if the maximum number of allowed
+     * concurrent threads has been exceeded
+     * @throws ServerErrorException if there is an error when accessing the
+     * server
+     * @throws SignInErrorException if the user is not found in the database or
+     * the credentials are incorrect
+     * @throws UserNotActiveException if the user exists but is not active
      */
-    //Falta el maxthreadsErrorException que supongoq ue se manejara como tan el el worker que es el que extiende de hilos??
     @Override
     public User signIn(User user) throws MaxThreadsErrorException, ServerErrorException, SignInErrorException, UserNotActiveException {
         //signin
@@ -113,7 +122,7 @@ public class DataAccessObject implements Signable {
             logger.log(Level.SEVERE, "SQL error", e);
             throw new ServerErrorException("Error accessing the server.");
         } finally {
-          closeConnection();
+            closeConnection();
         }
 
     }
