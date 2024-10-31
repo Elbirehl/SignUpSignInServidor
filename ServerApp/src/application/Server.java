@@ -71,7 +71,7 @@ public class Server {
                     //Just in case a Worker can't be created 
                     if (worker != null) {
                         worker.start();
-                        connections++;
+                        openWorker();
                     } else {
                         try {
                             // Gets an ObjectOutputStream to write.
@@ -102,6 +102,17 @@ public class Server {
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    /**
+     * Increments the active connections count. This method is synchronized to
+     * ensure thread safety when modifying the connection counter. Logs an
+     * informational message indicating that a new connection has been opened.
+     */
+    public synchronized static void openWorker() {
+        logger.info("Opening the connection.");
+        // Increase the connections' counter
+        connections++;
     }
 
     /**
