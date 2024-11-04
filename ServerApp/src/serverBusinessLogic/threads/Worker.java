@@ -45,13 +45,13 @@ public class Worker extends Thread {
     /**
      * Runs the worker thread, initializing input/output streams and handling
      * requests received from the client socket. This method reads a request
-     * message, processes it through, and sends an
-     * appropriate response back to the client.
+     * message, processes it through, and sends an appropriate response back to
+     * the client.
      */
     @Override
     public void run() {
         try {
-            //Thread.sleep(120000);
+            Thread.sleep(60000);
             read = new ObjectInputStream(clientSocket.getInputStream());
             write = new ObjectOutputStream(clientSocket.getOutputStream());
             // Read the customer's message
@@ -66,7 +66,7 @@ public class Worker extends Thread {
         } catch (IOException | ClassNotFoundException e) {
             logger.log(Level.SEVERE, "Client handling error: {0}", e.getMessage());
         } catch (InterruptedException ex) {
-            Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 read.close();

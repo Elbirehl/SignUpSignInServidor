@@ -83,7 +83,6 @@ public class Server {
                         } catch (NullPointerException e) {
                             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, "Worker is null", e);
                         }
-
                     }
                 } else {
                     try {
@@ -96,7 +95,6 @@ public class Server {
                     } catch (IOException ex1) {
                         Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex1);
                     }
-
                 }
             }
         } catch (IOException ex) {
