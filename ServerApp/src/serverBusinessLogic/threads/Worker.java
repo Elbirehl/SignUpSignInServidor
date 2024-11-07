@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package serverBusinessLogic.threads;
 
 import application.Server;
@@ -22,14 +17,14 @@ import logicalModel.message.Message;
 import logicalModel.message.MessageType;
 import logicalModel.model.User;
 
-/*
- *  * Worker is a thread responsible for handling client-server interactions
- * in the server's business logic layer. It listens to client requests,
- * processes them, and sends back responses according to request type.
- * This class uses an instance of Socket to manage communication with clients,
- * and it handles exceptions relevant to user authentication and server
- * response errors.
- *  @author Irati, Elbire, Meylind and Olaia
+/**
+ * Worker is a thread responsible for handling client-server interactions in the
+ * server's business logic layer. It listens to client requests, processes them,
+ * and sends back responses according to request type. This class uses an
+ * instance of Socket to manage communication with clients, and it handles
+ * exceptions relevant to user authentication and server response errors.
+ *
+ * @author Irati, Elbire, Meylin, Olaia
  */
 public class Worker extends Thread {
 
@@ -50,12 +45,13 @@ public class Worker extends Thread {
     /**
      * Runs the worker thread, initializing input/output streams and handling
      * requests received from the client socket. This method reads a request
-     * message, processes it through {@code handleRequest()}, and sends an
-     * appropriate response back to the client.
+     * message, processes it through, and sends an appropriate response back to
+     * the client.
      */
     @Override
     public void run() {
         try {
+            //Thread.sleep(60000);
             read = new ObjectInputStream(clientSocket.getInputStream());
             write = new ObjectOutputStream(clientSocket.getOutputStream());
             // Read the customer's message
@@ -69,6 +65,8 @@ public class Worker extends Thread {
 
         } catch (IOException | ClassNotFoundException e) {
             logger.log(Level.SEVERE, "Client handling error: {0}", e.getMessage());
+        //} catch (InterruptedException ex) {
+            //Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 read.close();
