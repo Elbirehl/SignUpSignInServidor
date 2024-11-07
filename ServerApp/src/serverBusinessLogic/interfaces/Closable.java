@@ -7,7 +7,6 @@ package serverBusinessLogic.interfaces;
  * Implementing classes should ensure that the close method is called to avoid
  * resource leaks.
  *
- * @throws Exception if an error occurs during the closing process.
  *
  * @author olaia
  */

@@ -4,9 +4,9 @@ import dataAccess.PoolConnections;
 
 /**
  * PoolFactory is a factory class responsible for providing a singleton instance
- * of {@code PoolConnections}. This ensures that there is a single pool of
+ * of PoolConnections. This ensures that there is a single pool of
  * database connections used throughout the application, which can be accessed
- * via the {@code getPool()} method.
+ * via the getPool() method.
  *
  * @author Irati
  */

@@ -74,7 +74,7 @@ public class DataAccessObject implements Signable {
      * Signs in a user to the system.
      *
      * @param user the user to sign in
-     * @return the signed-in user with updated information 
+     * @return the signed-in user with updated information
      * @throws MaxThreadsErrorException if the maximum number of allowed
      * concurrent threads has been exceeded
      * @throws ServerErrorException if there is an error when accessing the
@@ -135,8 +135,10 @@ public class DataAccessObject implements Signable {
      * @param user the user to sign up
      * @return the registered user with updated information or null if
      * registration fails
-     * @throws logicalExceptions.ServerErrorException
-     * @throws logicalExceptions.UserExistErrorException
+     * @throws logicalExceptions.ServerErrorException if an unexpected server
+     * error occurs, preventing the registration from completing
+     * @throws logicalExceptions.UserExistErrorException if a user with the
+     * specified email already exists in the system
      */
     @Override
     public User signUp(User user) throws ServerErrorException, UserExistErrorException {

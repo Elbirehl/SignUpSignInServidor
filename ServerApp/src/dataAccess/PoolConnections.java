@@ -20,6 +20,8 @@ import serverBusinessLogic.interfaces.Closable;
  *
  * The connection pool is configured via a properties file specified in , where
  * database URL, credentials, and maximum connections can be set.
+ * 
+ * @author Irati, Elbire
  *
  */
 public class PoolConnections implements Closable {
