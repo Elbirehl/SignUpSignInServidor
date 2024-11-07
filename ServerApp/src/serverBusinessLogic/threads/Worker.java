@@ -51,7 +51,8 @@ public class Worker extends Thread {
     @Override
     public void run() {
         try {
-            //Thread.sleep(60000);
+            //Sleep the thread for 10 seconds
+            Thread.sleep(10000);
             read = new ObjectInputStream(clientSocket.getInputStream());
             write = new ObjectOutputStream(clientSocket.getOutputStream());
             // Read the customer's message
@@ -65,8 +66,8 @@ public class Worker extends Thread {
 
         } catch (IOException | ClassNotFoundException e) {
             logger.log(Level.SEVERE, "Client handling error: {0}", e.getMessage());
-        //} catch (InterruptedException ex) {
-            //Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            logger.log(Level.SEVERE, "Client handling error: {1}", ex.getMessage());
         } finally {
             try {
                 read.close();
